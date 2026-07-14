@@ -297,6 +297,24 @@
             box-shadow:0 16px 30px rgba(143, 99, 214, .28);
         }
 
+        .link-stats{
+            margin-top:10px;
+            padding:10px 12px;
+            border-radius:14px;
+            background:rgba(143, 99, 214, .06);
+            border:1px solid rgba(143, 99, 214, .14);
+            color:var(--text-muted);
+            font-size:14px;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+
+        .link-stats strong{
+            color:var(--accent);
+            font-weight:700;
+        }
+
         .empty-state{
             grid-column:1 / -1;
             padding:30px 24px;
@@ -362,7 +380,10 @@
         </header>
 
         <main id="grid" class="grid"></main>
+
         <div class="footer-note">
+            Số lượt click được lưu trên trình duyệt của bạn.
+        </div>
     </div>
 
     <script>
@@ -394,6 +415,18 @@
         const searchInput = document.getElementById('search');
         const filterSelect = document.getElementById('filter');
         const sortSelect = document.getElementById('sort');
+
+        function getStorageKey(link) {
+            return `world_click_count_${btoa(unescape(encodeURIComponent(link)))}`;
+        }
+
+        function getClickCount(link) {
+            return Number(localStorage.getItem(getStorageKey(link)) || 0);
+        }
+
+        function setClickCount(link, count) {
+            localStorage.setItem(getStorageKey(link), String(count));
+        }
 
         function render() {
             const query = searchInput.value.toLowerCase().trim();
@@ -439,11 +472,24 @@
                         <div class="tag-pill">${char.tag}</div>
                         <p class="description">${char.summary}</p>
                         <div class="card-actions">
-                            <a href="${char.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">🌸 Mở Thế Giới</a>
+                            <a href="${char.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary open-world" data-link="${char.link}">🌸 Mở Thế Giới</a>
+                        </div>
+                        <div class="link-stats">
+                            🌙 Đã có <strong class="click-count">${getClickCount(char.link)}</strong> người bước vào
                         </div>
                     </div>
                 `;
                 grid.appendChild(card);
+
+                const openBtn = card.querySelector('.open-world');
+                const countEl = card.querySelector('.click-count');
+
+                openBtn.addEventListener('click', () => {
+                    const link = openBtn.dataset.link;
+                    const newCount = getClickCount(link) + 1;
+                    setClickCount(link, newCount);
+                    countEl.textContent = newCount;
+                });
             });
         }
 
